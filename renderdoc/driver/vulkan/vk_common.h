@@ -740,6 +740,12 @@ enum class VulkanChunk : uint32_t
   vkCmdBeginRendering,
   vkCmdEndRendering,
   vkCmdSetFragmentShadingRateKHR,
+  vkCmdBindPipelineShaderGroupNV,
+  vkCmdExecuteGeneratedCommandsNV,
+  vkCmdPreprocessGeneratedCommandsNV,
+  vkCreateIndirectCommandsLayoutNV,
+  vkDestroyIndirectCommandsLayoutNV,
+  vkGetGeneratedCommandsMemoryRequirementsNV,
   Max,
 };
 
@@ -778,7 +784,8 @@ DECLARE_REFLECTION_ENUM(VulkanChunk);
   SERIALISE_HANDLE(VkSwapchainKHR)             \
   SERIALISE_HANDLE(VkSurfaceKHR)               \
   SERIALISE_HANDLE(VkDescriptorUpdateTemplate) \
-  SERIALISE_HANDLE(VkSamplerYcbcrConversion)
+  SERIALISE_HANDLE(VkSamplerYcbcrConversion)   \
+  SERIALISE_HANDLE(VkIndirectCommandsLayoutNV)
 
 #define SERIALISE_HANDLE(type) DECLARE_REFLECTION_STRUCT(type)
 
@@ -797,11 +804,14 @@ DECLARE_REFLECTION_STRUCT(VkAttachmentReferenceStencilLayout);
 DECLARE_REFLECTION_STRUCT(VkAttachmentSampleLocationsEXT);
 DECLARE_REFLECTION_STRUCT(VkBindBufferMemoryDeviceGroupInfo);
 DECLARE_REFLECTION_STRUCT(VkBindBufferMemoryInfo);
+DECLARE_REFLECTION_STRUCT(VkBindIndexBufferIndirectCommandNV);
 DECLARE_REFLECTION_STRUCT(VkBindImageMemoryDeviceGroupInfo);
 DECLARE_REFLECTION_STRUCT(VkBindImageMemoryInfo);
 DECLARE_REFLECTION_STRUCT(VkBindImageMemorySwapchainInfoKHR);
 DECLARE_REFLECTION_STRUCT(VkBindImagePlaneMemoryInfo);
+DECLARE_REFLECTION_STRUCT(VkBindShaderGroupIndirectCommandNV);
 DECLARE_REFLECTION_STRUCT(VkBindSparseInfo);
+DECLARE_REFLECTION_STRUCT(VkBindVertexBufferIndirectCommandNV);
 DECLARE_REFLECTION_STRUCT(VkBlitImageInfo2);
 DECLARE_REFLECTION_STRUCT(VkBufferCopy2);
 DECLARE_REFLECTION_STRUCT(VkBufferCreateInfo);
@@ -897,8 +907,12 @@ DECLARE_REFLECTION_STRUCT(VkFragmentShadingRateAttachmentInfoKHR);
 DECLARE_REFLECTION_STRUCT(VkFramebufferAttachmentImageInfo);
 DECLARE_REFLECTION_STRUCT(VkFramebufferAttachmentsCreateInfo);
 DECLARE_REFLECTION_STRUCT(VkFramebufferCreateInfo);
+DECLARE_REFLECTION_STRUCT(VkGeneratedCommandsInfoNV);
+DECLARE_REFLECTION_STRUCT(VkGeneratedCommandsMemoryRequirementsInfoNV);
 DECLARE_REFLECTION_STRUCT(VkGraphicsPipelineCreateInfo);
 DECLARE_REFLECTION_STRUCT(VkGraphicsPipelineLibraryCreateInfoEXT);
+DECLARE_REFLECTION_STRUCT(VkGraphicsPipelineShaderGroupsCreateInfoNV);
+DECLARE_REFLECTION_STRUCT(VkGraphicsShaderGroupCreateInfoNV);
 DECLARE_REFLECTION_STRUCT(VkHdrMetadataEXT);
 DECLARE_REFLECTION_STRUCT(VkImageBlit2);
 DECLARE_REFLECTION_STRUCT(VkImageCopy2);
@@ -919,6 +933,9 @@ DECLARE_REFLECTION_STRUCT(VkImageViewUsageCreateInfo);
 DECLARE_REFLECTION_STRUCT(VkImportFenceFdInfoKHR);
 DECLARE_REFLECTION_STRUCT(VkImportMemoryFdInfoKHR);
 DECLARE_REFLECTION_STRUCT(VkImportSemaphoreFdInfoKHR);
+DECLARE_REFLECTION_STRUCT(VkIndirectCommandsLayoutCreateInfoNV);
+DECLARE_REFLECTION_STRUCT(VkIndirectCommandsLayoutTokenNV);
+DECLARE_REFLECTION_STRUCT(VkIndirectCommandsStreamNV);
 DECLARE_REFLECTION_STRUCT(VkInstanceCreateInfo);
 DECLARE_REFLECTION_STRUCT(VkLayerDeviceCreateInfo);
 DECLARE_REFLECTION_STRUCT(VkLayerInstanceCreateInfo);
@@ -955,7 +972,9 @@ DECLARE_REFLECTION_STRUCT(VkPhysicalDeviceCustomBorderColorPropertiesEXT);
 DECLARE_REFLECTION_STRUCT(VkPhysicalDeviceDepthClipEnableFeaturesEXT);
 DECLARE_REFLECTION_STRUCT(VkPhysicalDeviceDepthStencilResolveProperties);
 DECLARE_REFLECTION_STRUCT(VkPhysicalDeviceDescriptorIndexingFeatures)
-DECLARE_REFLECTION_STRUCT(VkPhysicalDeviceDescriptorIndexingProperties)
+DECLARE_REFLECTION_STRUCT(VkPhysicalDeviceDescriptorIndexingProperties);
+DECLARE_REFLECTION_STRUCT(VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV);
+DECLARE_REFLECTION_STRUCT(VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV);
 DECLARE_REFLECTION_STRUCT(VkPhysicalDeviceDiscardRectanglePropertiesEXT);
 DECLARE_REFLECTION_STRUCT(VkPhysicalDeviceDriverProperties);
 DECLARE_REFLECTION_STRUCT(VkPhysicalDeviceDynamicRenderingFeatures);
@@ -1137,6 +1156,7 @@ DECLARE_REFLECTION_STRUCT(VkSemaphoreSignalInfo);
 DECLARE_REFLECTION_STRUCT(VkSemaphoreSubmitInfo);
 DECLARE_REFLECTION_STRUCT(VkSemaphoreTypeCreateInfo);
 DECLARE_REFLECTION_STRUCT(VkSemaphoreWaitInfo);
+DECLARE_REFLECTION_STRUCT(VkSetStateFlagsIndirectCommandNV);
 DECLARE_REFLECTION_STRUCT(VkShaderModuleCreateInfo);
 DECLARE_REFLECTION_STRUCT(VkShaderModuleValidationCacheCreateInfoEXT);
 DECLARE_REFLECTION_STRUCT(VkSharedPresentSurfaceCapabilitiesKHR);
@@ -1783,6 +1803,9 @@ DECLARE_REFLECTION_ENUM(VkImageUsageFlagBits);
 DECLARE_REFLECTION_ENUM(VkImageViewCreateFlagBits);
 DECLARE_REFLECTION_ENUM(VkImageViewType);
 DECLARE_REFLECTION_ENUM(VkIndexType);
+DECLARE_REFLECTION_ENUM(VkIndirectCommandsLayoutUsageFlagBitsNV);
+DECLARE_REFLECTION_ENUM(VkIndirectCommandsTokenTypeNV);
+DECLARE_REFLECTION_ENUM(VkIndirectStateFlagBitsNV);
 DECLARE_REFLECTION_ENUM(VkLineRasterizationModeEXT);
 DECLARE_REFLECTION_ENUM(VkLogicOp);
 DECLARE_REFLECTION_ENUM(VkMemoryAllocateFlagBits);

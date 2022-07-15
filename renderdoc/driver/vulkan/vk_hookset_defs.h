@@ -1102,6 +1102,9 @@
               const uint32_t *, pDynamicOffsets);                                                    \
   HookDefine4(void, vkCmdBindIndexBuffer, VkCommandBuffer, commandBuffer, VkBuffer, buffer,          \
               VkDeviceSize, offset, VkIndexType, indexType);                                         \
+  HookDefine4(void, vkCmdBindPipelineShaderGroupNV, VkCommandBuffer, commandBuffer,                  \
+              VkPipelineBindPoint, pipelineBindPoint,                                                \
+              VkPipeline, pipeline, uint32_t, groupIndex);                                           \
   HookDefine5(void, vkCmdBindVertexBuffers, VkCommandBuffer, commandBuffer, uint32_t, firstBinding,  \
               uint32_t, bindingCount, const VkBuffer *, pBuffers, const VkDeviceSize *, pOffsets);   \
   HookDefine5(void, vkCmdDraw, VkCommandBuffer, commandBuffer, uint32_t, vertexCount, uint32_t,      \

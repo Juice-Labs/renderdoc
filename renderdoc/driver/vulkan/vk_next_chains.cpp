@@ -744,13 +744,9 @@ static void AppendModifiedChainedStruct(byte *&tempMem, VkStruct *outputStruct,
   case VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_2_EXT:                          \
   case VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_EXT:                            \
   case VK_STRUCTURE_TYPE_FRAMEBUFFER_MIXED_SAMPLES_COMBINATION_NV:                           \
-  case VK_STRUCTURE_TYPE_GENERATED_COMMANDS_INFO_NV:                                         \
-  case VK_STRUCTURE_TYPE_GENERATED_COMMANDS_MEMORY_REQUIREMENTS_INFO_NV:                     \
   case VK_STRUCTURE_TYPE_GEOMETRY_AABB_NV:                                                   \
   case VK_STRUCTURE_TYPE_GEOMETRY_NV:                                                        \
   case VK_STRUCTURE_TYPE_GEOMETRY_TRIANGLES_NV:                                              \
-  case VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_SHADER_GROUPS_CREATE_INFO_NV:                     \
-  case VK_STRUCTURE_TYPE_GRAPHICS_SHADER_GROUP_CREATE_INFO_NV:                               \
   case VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT:                                   \
   case VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT:                                      \
   case VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT:                                   \
@@ -767,8 +763,6 @@ static void AppendModifiedChainedStruct(byte *&tempMem, VkStruct *outputStruct,
   case VK_STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT:                                \
   case VK_STRUCTURE_TYPE_IMPORT_MEMORY_ZIRCON_HANDLE_INFO_FUCHSIA:                           \
   case VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_ZIRCON_HANDLE_INFO_FUCHSIA:                        \
-  case VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NV:                            \
-  case VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_TOKEN_NV:                                  \
   case VK_STRUCTURE_TYPE_INITIALIZE_PERFORMANCE_API_INFO_INTEL:                              \
   case VK_STRUCTURE_TYPE_MEMORY_GET_REMOTE_ADDRESS_INFO_NV:                                  \
   case VK_STRUCTURE_TYPE_MEMORY_GET_ZIRCON_HANDLE_INFO_FUCHSIA:                              \
@@ -791,8 +785,6 @@ static void AppendModifiedChainedStruct(byte *&tempMem, VkStruct *outputStruct,
   case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COVERAGE_REDUCTION_MODE_FEATURES_NV:                \
   case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT:                    \
   case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_SET_HOST_MAPPING_FEATURES_VALVE:         \
-  case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV:              \
-  case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_NV:            \
   case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_MEMORY_REPORT_FEATURES_EXT:                  \
   case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DIAGNOSTICS_CONFIG_FEATURES_NV:                     \
   case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRM_PROPERTIES_EXT:                                 \
@@ -1341,6 +1333,26 @@ size_t GetNextPatchSize(const void *pNext)
                                  VkSurfaceCapabilitiesFullScreenExclusiveEXT);
         COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT,
                                  VkSurfaceFullScreenExclusiveInfoEXT);
+
+
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_GENERATED_COMMANDS_INFO_NV,
+                                 VkGeneratedCommandsInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_GENERATED_COMMANDS_MEMORY_REQUIREMENTS_INFO_NV,
+                                 VkGeneratedCommandsMemoryRequirementsInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_SHADER_GROUPS_CREATE_INFO_NV,
+                                 VkGraphicsPipelineShaderGroupsCreateInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_GRAPHICS_SHADER_GROUP_CREATE_INFO_NV,
+                                 VkGraphicsShaderGroupCreateInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NV,
+                                 VkIndirectCommandsLayoutCreateInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_TOKEN_NV,
+                                 VkIndirectCommandsLayoutTokenNV);
+        COPY_STRUCT_CAPTURE_ONLY(
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV,
+            VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV);
+        COPY_STRUCT_CAPTURE_ONLY(
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_NV,
+            VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV);
 
       case VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR:
         memSize += sizeof(VkMemoryGetWin32HandleInfoKHR);
@@ -2467,6 +2479,25 @@ void UnwrapNextChain(CaptureState state, const char *structName, byte *&tempMem,
         COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT,
                                  VkSurfaceFullScreenExclusiveInfoEXT);
 
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_GENERATED_COMMANDS_INFO_NV,
+                                 VkGeneratedCommandsInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_GENERATED_COMMANDS_MEMORY_REQUIREMENTS_INFO_NV,
+                                 VkGeneratedCommandsMemoryRequirementsInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_SHADER_GROUPS_CREATE_INFO_NV,
+                                 VkGraphicsPipelineShaderGroupsCreateInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_GRAPHICS_SHADER_GROUP_CREATE_INFO_NV,
+                                 VkGraphicsShaderGroupCreateInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NV,
+                                 VkIndirectCommandsLayoutCreateInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_TOKEN_NV,
+                                 VkIndirectCommandsLayoutTokenNV);
+        COPY_STRUCT_CAPTURE_ONLY(
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV,
+            VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV);
+        COPY_STRUCT_CAPTURE_ONLY(
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_NV,
+            VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV);
+
         UNWRAP_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR,
                                    VkMemoryGetWin32HandleInfoKHR, UnwrapInPlace(out->memory));
         UNWRAP_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR,
@@ -2553,13 +2584,13 @@ void UnwrapNextChain(CaptureState state, const char *structName, byte *&tempMem,
         break;
       }
 
-        UNHANDLED_STRUCTS()
-        {
+      UNHANDLED_STRUCTS()
+      {
           RDCERR("Unhandled struct %s in %s pNext chain", ToStr(nextInput->sType).c_str(),
-                 structName);
+                  structName);
           nextChainTail->pNext = nextInput;
           break;
-        }
+      }
 
       case VK_STRUCTURE_TYPE_MAX_ENUM:
       {
@@ -2780,6 +2811,25 @@ void CopyNextChainForPatching(const char *structName, byte *&tempMem, VkBaseInSt
                                  VkSurfaceCapabilitiesFullScreenExclusiveEXT);
         COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT,
                                  VkSurfaceFullScreenExclusiveInfoEXT);
+
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_GENERATED_COMMANDS_INFO_NV,
+                                 VkGeneratedCommandsInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_GENERATED_COMMANDS_MEMORY_REQUIREMENTS_INFO_NV,
+                                 VkGeneratedCommandsMemoryRequirementsInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_SHADER_GROUPS_CREATE_INFO_NV,
+                                 VkGraphicsPipelineShaderGroupsCreateInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_GRAPHICS_SHADER_GROUP_CREATE_INFO_NV,
+                                 VkGraphicsShaderGroupCreateInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NV,
+                                 VkIndirectCommandsLayoutCreateInfoNV);
+        COPY_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_TOKEN_NV,
+                                 VkIndirectCommandsLayoutTokenNV);
+        COPY_STRUCT_CAPTURE_ONLY(
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV,
+            VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV);
+        COPY_STRUCT_CAPTURE_ONLY(
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_NV,
+            VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV);
 
         UNWRAP_STRUCT_CAPTURE_ONLY(VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR,
                                    VkMemoryGetWin32HandleInfoKHR, UnwrapInPlace(out->memory));

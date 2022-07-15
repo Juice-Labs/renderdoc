@@ -201,10 +201,12 @@ bool WrappedVulkan::CheckMemoryRequirements(const char *resourceName, ResourceId
   // to increased size requirements.
   ResourceId memOrigId = GetResourceManager()->GetOriginalID(memId);
 
-  VulkanCreationInfo::Memory &memInfo = m_CreationInfo.m_Memory[memId];
-  uint32_t bit = 1U << memInfo.memoryTypeIndex;
-
   bool origInvalid = false;
+
+  VulkanCreationInfo::Memory &memInfo = m_CreationInfo.m_Memory[memId];
+
+  #if 0
+  uint32_t bit = 1U << memInfo.memoryTypeIndex;
 
   // verify type
   if((mrq.memoryTypeBits & bit) == 0)
@@ -238,6 +240,7 @@ bool WrappedVulkan::CheckMemoryRequirements(const char *resourceName, ResourceId
         bitsString.c_str(), GetPhysDeviceCompatString(external, origInvalid).c_str());
     return false;
   }
+  #endif
 
   // verify offset alignment
   if((memoryOffset % mrq.alignment) != 0)

@@ -2148,6 +2148,10 @@ public:
                                 VkSamplerYcbcrConversion ycbcrConversion,
                                 const VkAllocationCallbacks *pAllocator);
 
+  IMPLEMENT_FUNCTION_SERIALISED(void, vkDestroyIndirectCommandsLayoutNV, VkDevice device,
+                                VkIndirectCommandsLayoutNV indirectCommandsLayout,
+                                const VkAllocationCallbacks *pAllocator);
+
   // VK_KHR_device_group_creation
   VkResult vkEnumeratePhysicalDeviceGroups(
       VkInstance instance, uint32_t *pPhysicalDeviceGroupCount,

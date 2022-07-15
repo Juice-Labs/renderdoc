@@ -177,6 +177,7 @@ DESTROY_IMPL(VkCommandPool, DestroyCommandPool)
 DESTROY_IMPL(VkQueryPool, DestroyQueryPool)
 DESTROY_IMPL(VkDescriptorUpdateTemplate, DestroyDescriptorUpdateTemplate)
 DESTROY_IMPL(VkSamplerYcbcrConversion, DestroySamplerYcbcrConversion)
+DESTROY_IMPL(VkIndirectCommandsLayoutNV, DestroyIndirectCommandsLayoutNV)
 
 #undef DESTROY_IMPL
 
@@ -554,6 +555,13 @@ bool WrappedVulkan::ReleaseResource(WrappedVkRes *res)
       VkSamplerYcbcrConversion real = nondisp->real.As<VkSamplerYcbcrConversion>();
       GetResourceManager()->ReleaseWrappedResource(VkSamplerYcbcrConversion(handle));
       vt->DestroySamplerYcbcrConversion(Unwrap(dev), real, NULL);
+      break;
+    }
+    case eResIndirectCommandsLayout: 
+    {
+      VkIndirectCommandsLayoutNV real = nondisp->real.As<VkIndirectCommandsLayoutNV>();
+      GetResourceManager()->ReleaseWrappedResource(VkIndirectCommandsLayoutNV(handle));
+      vt->DestroyIndirectCommandsLayoutNV(Unwrap(dev), real, NULL);
       break;
     }
   }
@@ -2237,6 +2245,9 @@ bool WrappedVulkan::Serialise_vkDebugMarkerSetObjectNameEXT(
         case eResSamplerConversion:
           type = VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_EXT;
           break;
+        case eResIndirectCommandsLayout:
+          type = VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT; 
+          break;
       }
 
       if(ObjDisp(m_Device)->DebugMarkerSetObjectNameEXT &&
@@ -2416,6 +2427,7 @@ bool WrappedVulkan::Serialise_vkSetDebugUtilsObjectNameEXT(
         case eResSurface: type = VK_OBJECT_TYPE_SURFACE_KHR; break;
         case eResDescUpdateTemplate: type = VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE; break;
         case eResSamplerConversion: type = VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION; break;
+        case eResIndirectCommandsLayout: type = VK_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_NV; break;
       }
 
       if(ObjDisp(m_Device)->SetDebugUtilsObjectNameEXT && type != VK_OBJECT_TYPE_UNKNOWN &&
