@@ -3201,6 +3201,10 @@ bool WrappedVulkan::ContextProcessChunk(ReadSerialiser &ser, VulkanChunk chunk)
   if(!success)
     return false;
 
+  char text[MAX_PATH];
+  std::snprintf(text, MAX_PATH, " (ResourceId::%llu)\n", *(uint64_t*)(&m_LastCmdBufferID));
+  OutputDebugStringA(text);
+
   if(IsLoading(m_State))
   {
     if(chunk == VulkanChunk::vkBeginCommandBuffer || chunk == VulkanChunk::vkEndCommandBuffer)
@@ -3225,6 +3229,44 @@ bool WrappedVulkan::ContextProcessChunk(ReadSerialiser &ser, VulkanChunk chunk)
 
 bool WrappedVulkan::ProcessChunk(ReadSerialiser &ser, VulkanChunk chunk)
 {
+  rdcstr str;
+
+  if((SystemChunk)chunk < SystemChunk::FirstDriverChunk)
+  {
+    switch ((SystemChunk)chunk)
+    {
+      case SystemChunk::DriverInit:
+        str = "DriverInit";
+        break;
+      case SystemChunk::InitialContentsList:
+        str = "InitialContentsList";
+        break;
+      case SystemChunk::InitialContents:
+        str = "InitialContents";
+        break;
+      case SystemChunk::CaptureBegin:
+        str = "CaptureBegin";
+        break;
+      case SystemChunk::CaptureScope:
+        str = "CaptureScope";
+        break;
+      case SystemChunk::CaptureEnd:
+        str = "CaptureEnd";
+        break;
+      default: 
+        str = "Unknown"; 
+        break;
+    }
+  }
+  else
+  {
+    str = DoStringise(chunk);
+  }
+
+  char text[MAX_PATH];
+  std::snprintf(text, MAX_PATH, "ProcessChunk %s", str.c_str());
+  OutputDebugStringA(text);
+
   switch(chunk)
   {
     case VulkanChunk::vkEnumeratePhysicalDevices:
@@ -3239,6 +3281,7 @@ bool WrappedVulkan::ProcessChunk(ReadSerialiser &ser, VulkanChunk chunk)
     case VulkanChunk::vkUnmapMemory:
       return Serialise_vkUnmapMemory(ser, VK_NULL_HANDLE, VK_NULL_HANDLE);
     case VulkanChunk::vkFlushMappedMemoryRanges:
+      return Serialise_vkFlushMappedMemoryRanges(ser, VK_NULL_HANDLE, 0, NULL);
     case VulkanChunk::CoherentMapWrite:
       return Serialise_vkFlushMappedMemoryRanges(ser, VK_NULL_HANDLE, 0, NULL);
     case VulkanChunk::vkCreateCommandPool:
@@ -3645,6 +3688,13 @@ bool WrappedVulkan::ProcessChunk(ReadSerialiser &ser, VulkanChunk chunk)
     case VulkanChunk::vkResetCommandPool:
     case VulkanChunk::vkCreateDepthTargetView:
       RDCERR("Unexpected Chunk type %s", ToStr(chunk).c_str());
+
+    case VulkanChunk::vkCmdBindPipelineShaderGroupNV:
+    case VulkanChunk::vkCmdExecuteGeneratedCommandsNV:
+    case VulkanChunk::vkCmdPreprocessGeneratedCommandsNV:
+    case VulkanChunk::vkCreateIndirectCommandsLayoutNV:
+    case VulkanChunk::vkDestroyIndirectCommandsLayoutNV:
+    case VulkanChunk::vkGetGeneratedCommandsMemoryRequirementsNV:
 
     // no explicit default so that we have compiler warnings if a chunk isn't explicitly handled.
     case VulkanChunk::Max: break;
@@ -4494,6 +4544,10 @@ ResourceId WrappedVulkan::GetPartialCommandBuffer()
 
 void WrappedVulkan::AddAction(const ActionDescription &a)
 {
+  char text[MAX_PATH];
+  std::snprintf(text, MAX_PATH, "Action: %s\n", a.customName.c_str());
+  OutputDebugStringA(text);
+
   m_AddedAction = true;
 
   ActionDescription action = a;

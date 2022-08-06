@@ -264,6 +264,8 @@ bool WrappedVulkan::Serialise_vkCmdDrawIndexed(SerialiserType &ser, VkCommandBuf
   if(IsReplayingAndReading())
   {
     m_LastCmdBufferID = GetResourceManager()->GetOriginalID(GetResID(commandBuffer));
+    //if(*(uint64_t *)&m_LastCmdBufferID == 19781)
+    //  return true;
 
     if(IsActiveReplaying(m_State))
     {
@@ -288,9 +290,7 @@ bool WrappedVulkan::Serialise_vkCmdDrawIndexed(SerialiserType &ser, VkCommandBuf
     }
     else
     {
-      ObjDisp(commandBuffer)
-          ->CmdDrawIndexed(Unwrap(commandBuffer), indexCount, instanceCount, firstIndex,
-                           vertexOffset, firstInstance);
+      ObjDisp(commandBuffer)->CmdDrawIndexed(Unwrap(commandBuffer), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
       {
         AddEvent();
 
@@ -2084,6 +2084,8 @@ bool WrappedVulkan::Serialise_vkCmdUpdateBuffer(SerialiserType &ser, VkCommandBu
   if(IsReplayingAndReading())
   {
     m_LastCmdBufferID = GetResourceManager()->GetOriginalID(GetResID(commandBuffer));
+    if(*(uint64_t *)&m_LastCmdBufferID == 19781)
+      return true;
 
     if(IsActiveReplaying(m_State))
     {

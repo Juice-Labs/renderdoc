@@ -1212,6 +1212,11 @@ bool WrappedVulkan::Serialise_vkQueueSubmit(SerialiserType &ser, VkQueue queue, 
 
   if(IsReplayingAndReading())
   {
+    {
+      auto result = ObjDisp(queue)->QueueWaitIdle(Unwrap(queue));
+      RDCASSERT(result == VK_SUCCESS);
+    }
+
     // if there are multiple queue submissions in flight, wait for the previous queue to finish
     // before executing this, as we don't have the sync information to properly sync.
     if(m_PrevQueue != queue)
@@ -1219,7 +1224,11 @@ bool WrappedVulkan::Serialise_vkQueueSubmit(SerialiserType &ser, VkQueue queue, 
       RDCDEBUG("Previous queue execution was on queue %s, now executing %s, syncing GPU",
                ToStr(GetResID(m_PrevQueue)).c_str(), ToStr(GetResID(queue)).c_str());
       if(m_PrevQueue != VK_NULL_HANDLE)
-        ObjDisp(m_PrevQueue)->QueueWaitIdle(Unwrap(m_PrevQueue));
+      {
+        auto result = ObjDisp(m_PrevQueue)->QueueWaitIdle(Unwrap(m_PrevQueue));
+        RDCASSERT(result == VK_SUCCESS);
+      }
+        
 
       m_PrevQueue = queue;
     }
@@ -1231,7 +1240,11 @@ bool WrappedVulkan::Serialise_vkQueueSubmit(SerialiserType &ser, VkQueue queue, 
         doWait = true;
 
     if(doWait)
-      ObjDisp(queue)->QueueWaitIdle(Unwrap(queue));
+    {
+      auto result = ObjDisp(queue)->QueueWaitIdle(Unwrap(queue));
+      RDCASSERT(result == VK_SUCCESS);
+    }
+      
 
     // add an action use for this submission, to tally up with any debug messages that come from it
     if(IsLoading(m_State))
@@ -1285,7 +1298,15 @@ bool WrappedVulkan::Serialise_vkQueueSubmit(SerialiserType &ser, VkQueue queue, 
 
       rdcstr basename = StringFormat::Fmt("vkQueueSubmit(%u)", submitInfo.commandBufferInfoCount);
 
-      ReplayQueueSubmit(queue, submitInfo, basename);
+      //if(cmds.size() != 4)
+      {
+        ReplayQueueSubmit(queue, submitInfo, basename);
+      }
+    }
+
+    {
+      auto result = ObjDisp(queue)->QueueWaitIdle(Unwrap(queue));
+      RDCASSERT(result == VK_SUCCESS);
     }
   }
 

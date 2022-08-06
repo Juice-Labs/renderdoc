@@ -31,6 +31,8 @@
 #include "vk_manager.h"
 #include "vk_state.h"
 
+#include <atomic>
+
 class VulkanShaderCache;
 class VulkanDebugManager;
 class VulkanResourceManager;
@@ -2569,4 +2571,10 @@ public:
   VkResult vkGetPhysicalDeviceFragmentShadingRatesKHR(
       VkPhysicalDevice physicalDevice, uint32_t *pFragmentShadingRateCount,
       VkPhysicalDeviceFragmentShadingRateKHR *pFragmentShadingRates);
+
+
+  IMPLEMENT_FUNCTION_SERIALISED(void, vkCmdBindPipelineShaderGroupNV, VkCommandBuffer commandBuffer,
+                                VkPipelineBindPoint pipelineBindPoint,
+                                VkPipeline pipeline,
+                                uint32_t groupIndex);
 };

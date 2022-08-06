@@ -32,6 +32,11 @@
 #include "core/settings.h"
 #include "strings/string_utils.h"
 
+#include <mutex>
+#include "aftermath/GFSDK_Aftermath.h"
+#include "aftermath/GFSDK_Aftermath_GpuCrashDump.h"
+#include "aftermath/GFSDK_Aftermath_GpuCrashDumpDecoding.h" 
+
 RDOC_CONFIG(
     bool, Vulkan_Debug_ReplaceAppInfo, true,
     "By default we have no choice but to replace VkApplicationInfo to safely work on all drivers. "
@@ -540,6 +545,60 @@ RDResult WrappedVulkan::Initialise(VkInitParams &params, uint64_t sectionVersion
 
   return ResultCode::Succeeded;
 }
+
+static std::mutex g_aftermathLock;
+static HMODULE AftermathLib;
+
+// Static wrapper for the GPU crash dump handler. See the 'Handling GPU crash dump Callbacks' section for details.
+static void GpuCrashDumpCallback(const void *pGpuCrashDump, const uint32_t gpuCrashDumpSize,
+                                 void *pUserData)
+{
+  std::lock_guard<std::mutex> lock(g_aftermathLock);
+  __debugbreak();
+  FILE *f;
+
+  fopen_s(&f, "crash.nv-gpudmp", "wb");
+  fwrite(pGpuCrashDump, gpuCrashDumpSize, 1, f);
+  fclose(f);
+}
+
+// Static wrapper for the shader debug information handler. See the 'Handling Shader Debug
+// Information callbacks' section for details.
+static void ShaderDebugInfoCallback(const void *pShaderDebugInfo,
+                                    const uint32_t shaderDebugInfoSize, void *pUserData)
+{
+  std::lock_guard<std::mutex> lock(g_aftermathLock);
+
+  auto getShaderDebugInfoIdentifier = (PFN_GFSDK_Aftermath_GetShaderDebugInfoIdentifier)GetProcAddress(AftermathLib, "GFSDK_Aftermath_GetShaderDebugInfoIdentifier");
+  RDCASSERT(getShaderDebugInfoIdentifier);
+
+  // Get shader debug information identifier.
+  GFSDK_Aftermath_ShaderDebugInfoIdentifier identifier = {};
+  if(!GFSDK_Aftermath_SUCCEED(getShaderDebugInfoIdentifier(
+         GFSDK_Aftermath_Version_API, pShaderDebugInfo, shaderDebugInfoSize, &identifier)))
+  {
+    RDCERR("Unable to get shader debug identifier");
+  }
+  else
+  {
+    char buffer[260] = {0};
+    snprintf(buffer, sizeof(buffer), "shader-%llx-%llx.nvdbg", identifier.id[0],
+             identifier.id[1]);
+
+    FILE *f;
+    fopen_s(&f, buffer, "wb");
+    fwrite(pShaderDebugInfo, shaderDebugInfoSize, 1, f);
+    fclose(f);
+  }
+}
+
+// Static wrapper for the GPU crash dump description handler. See the 'Handling GPU Crash Dump
+// Description Callbacks' section for details.
+static void CrashDumpDescriptionCallback(PFN_GFSDK_Aftermath_AddGpuCrashDumpDescription addDescription,
+                                         void *pUserData)
+{
+}
+
 
 VkResult WrappedVulkan::vkCreateInstance(const VkInstanceCreateInfo *pCreateInfo,
                                          const VkAllocationCallbacks *pAllocator,
@@ -1584,6 +1643,27 @@ bool WrappedVulkan::Serialise_vkCreateDevice(SerialiserType &ser, VkPhysicalDevi
                                              const VkAllocationCallbacks *pAllocator,
                                              VkDevice *pDevice)
 {
+  static std::once_flag aftermathInit;
+
+  std::call_once(aftermathInit, []() {
+    AftermathLib = LoadLibraryA("GFSDK_Aftermath_Lib.x64.dll");
+
+    auto enableGpuCrashDumps = (PFN_GFSDK_Aftermath_EnableGpuCrashDumps)GetProcAddress(
+        AftermathLib, "GFSDK_Aftermath_EnableGpuCrashDumps");
+    RDCASSERT(enableGpuCrashDumps);
+
+    // Enable GPU crash dumps and register callbacks.
+    if(!GFSDK_Aftermath_SUCCEED(enableGpuCrashDumps(
+           GFSDK_Aftermath_Version_API, GFSDK_Aftermath_GpuCrashDumpWatchedApiFlags_Vulkan,
+           GFSDK_Aftermath_GpuCrashDumpFeatureFlags_Default, GpuCrashDumpCallback,
+           ShaderDebugInfoCallback, CrashDumpDescriptionCallback, nullptr)))
+    {
+      RDCFATAL("Unable to initialize aftermath");
+    }
+
+    RDCLOG("Aftermath is enabled.");
+  });
+
   SERIALISE_ELEMENT(physicalDevice).Important();
   SERIALISE_ELEMENT_LOCAL(CreateInfo, *pCreateInfo).Important();
   SERIALISE_ELEMENT_OPT(pAllocator);

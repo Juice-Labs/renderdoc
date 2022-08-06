@@ -2036,3 +2036,39 @@ INSTANTIATE_FUNCTION_SERIALISED(void, vkCmdSetRasterizerDiscardEnable,
 INSTANTIATE_FUNCTION_SERIALISED(void, vkCmdSetFragmentShadingRateKHR, VkCommandBuffer commandBuffer,
                                 const VkExtent2D *pFragmentSize,
                                 const VkFragmentShadingRateCombinerOpKHR combinerOps[2]);
+
+INSTANTIATE_FUNCTION_SERIALISED(void, vkCmdBindPipelineShaderGroupNV, VkCommandBuffer commandBuffer,
+                                VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline,
+                                uint32_t groupIndex);
+
+void WrappedVulkan::vkCmdBindPipelineShaderGroupNV(VkCommandBuffer commandBuffer,
+                                                   VkPipelineBindPoint pipelineBindPoint,
+                                                   VkPipeline pipeline, uint32_t groupIndex)
+{
+  SCOPED_DBG_SINK();
+
+  SERIALISE_TIME_CALL(
+      ObjDisp(commandBuffer)
+          ->CmdBindPipelineShaderGroupNV(Unwrap(commandBuffer), pipelineBindPoint, Unwrap(pipeline), groupIndex));
+
+  if(IsCaptureMode(m_State))
+  {
+    VkResourceRecord *record = GetRecord(commandBuffer);
+
+    CACHE_THREAD_SERIALISER();
+
+    SCOPED_SERIALISE_CHUNK(VulkanChunk::vkCmdSetFragmentShadingRateKHR);
+    Serialise_vkCmdBindPipelineShaderGroupNV(ser, commandBuffer, pipelineBindPoint, pipeline, groupIndex);
+
+    record->AddChunk(scope.Get(&record->cmdInfo->alloc));
+  }
+}
+
+template <typename SerialiserType>
+bool WrappedVulkan::Serialise_vkCmdBindPipelineShaderGroupNV(SerialiserType &ser,
+                                                             VkCommandBuffer commandBuffer,
+                                                             VkPipelineBindPoint pipelineBindPoint,
+                                                             VkPipeline pipeline, uint32_t groupIndex)
+{
+  return false;
+}
