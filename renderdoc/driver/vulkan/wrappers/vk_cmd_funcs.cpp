@@ -3686,6 +3686,25 @@ bool WrappedVulkan::Serialise_vkCmdPushConstants(SerialiserType &ser, VkCommandB
   {
     m_LastCmdBufferID = GetResourceManager()->GetOriginalID(GetResID(commandBuffer));
 
+    if(*(uint64_t *)&m_LastCmdBufferID == 19781)
+    {
+      if(start == 0)
+      {
+        uint64_t *longvalues = (uint64_t *)values;
+
+        const uint64_t badOffset =  0x14cf645d00;
+        const uint64_t goodOffset = 0xe000001000;
+
+        char text[MAX_PATH];
+        std::snprintf(text, MAX_PATH, "vkCmdPushConstants uint64_t[0]: 0x%llx uint64_t[1]: 0x%llx \n",
+                      longvalues[0], longvalues[1]);
+        OutputDebugStringA(text);
+
+        longvalues[0] = longvalues[0] - badOffset + goodOffset;
+        longvalues[1] = longvalues[1] - badOffset + goodOffset;
+      }
+    }
+
     if(IsActiveReplaying(m_State))
     {
       if(InRerecordRange(m_LastCmdBufferID))

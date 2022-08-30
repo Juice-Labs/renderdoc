@@ -323,6 +323,21 @@ bool WrappedVulkan::Serialise_vkAllocateMemory(SerialiserType &ser, VkDevice dev
       return false;
     }
 
+    VkBaseInStructure *pNext = (VkBaseInStructure *)patched.pNext;
+    while(pNext)
+    {
+
+      if(pNext->sType == VK_STRUCTURE_TYPE_MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO)
+      {
+        auto bufInfo = (VkMemoryOpaqueCaptureAddressAllocateInfo *)pNext;
+        char text[MAX_PATH];
+        std::snprintf(text, MAX_PATH, "VkMemoryOpaqueCaptureAddressAllocateInfo: 0x%llx\n",
+                      (uint64_t)bufInfo->opaqueCaptureAddress);
+        OutputDebugStringA(text);
+      }
+      pNext = (VkBaseInStructure *)pNext->pNext;
+    }
+
     VkResult ret = ObjDisp(device)->AllocateMemory(Unwrap(device), &patched, NULL, &mem);
 
     if(ret != VK_SUCCESS)
@@ -1630,6 +1645,36 @@ bool WrappedVulkan::Serialise_vkCreateBuffer(SerialiserType &ser, VkDevice devic
     byte *tempMem = GetTempMemory(GetNextPatchSize(patched.pNext));
 
     UnwrapNextChain(m_State, "VkBufferCreateInfo", tempMem, (VkBaseInStructure *)&patched);
+
+    if((patched.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) != 0)
+    {
+      printf("");
+    }
+
+    VkBaseInStructure *pNext = (VkBaseInStructure *)patched.pNext;
+    while(pNext)
+    {
+      if(pNext->sType == VK_STRUCTURE_TYPE_BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO)
+      {
+        auto bufInfo = (VkBufferOpaqueCaptureAddressCreateInfo *)pNext;
+        static bool used = true;
+
+        if(!used)
+        {
+          bufInfo->opaqueCaptureAddress = 0x14cf647000;
+          used = true;
+        }
+        
+        char text[MAX_PATH];
+        std::snprintf(text, MAX_PATH, "VkBufferOpaqueCaptureAddressCreateInfo: 0x%llx\n", (uint64_t)bufInfo->opaqueCaptureAddress);
+        OutputDebugStringA(text);
+      }
+      else if(pNext->sType == VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT)
+      {
+        printf("");
+      }
+      pNext = (VkBaseInStructure *)pNext->pNext;
+    }
 
     VkResult ret = ObjDisp(device)->CreateBuffer(Unwrap(device), &patched, NULL, &buf);
 

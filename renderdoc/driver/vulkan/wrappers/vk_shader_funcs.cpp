@@ -26,6 +26,10 @@
 #include "../vk_replay.h"
 #include "driver/shaders/spirv/spirv_reflect.h"
 
+#include "aftermath/GFSDK_Aftermath.h"
+#include "aftermath/GFSDK_Aftermath_GpuCrashDump.h"
+#include "aftermath/GFSDK_Aftermath_GpuCrashDumpDecoding.h" 
+
 template <>
 VkComputePipelineCreateInfo *WrappedVulkan::UnwrapInfos(CaptureState state,
                                                         const VkComputePipelineCreateInfo *info,
@@ -289,12 +293,49 @@ bool WrappedVulkan::Serialise_vkCreateShaderModule(SerialiserType &ser, VkDevice
   return true;
 }
 
+void WrappedVulkan::AddShaderModule(void *pCode, size_t codeSize)
+{
+  static HMODULE AftermathLib = LoadLibraryA("GFSDK_Aftermath_Lib.x64.dll");
+  static auto getShaderHashSpirv = (PFN_GFSDK_Aftermath_GetShaderHashSpirv)GetProcAddress(
+      AftermathLib, "GFSDK_Aftermath_GetShaderHashSpirv");
+  RDCASSERT(getShaderHashSpirv);
+
+  GFSDK_Aftermath_SpirvCode code{};
+  code.pData = (void *)pCode;
+  code.size = (uint32_t)codeSize;
+
+  GFSDK_Aftermath_ShaderBinaryHash hash{};
+  getShaderHashSpirv(GFSDK_Aftermath_Version_API, &code, &hash);
+
+  {
+    char filename[MAX_PATH];
+    std::snprintf(filename, MAX_PATH, "shaders/%016llx.spv", hash.hash);
+
+    FILE *f = nullptr;
+    fopen_s(&f, filename, "wb");
+    if(f)
+    {
+      fwrite(pCode, codeSize, 1, f);
+      fclose(f);
+    }
+
+    std::vector<uint8_t> shaderData;
+    shaderData.resize(codeSize);
+    memcpy(shaderData.data(), pCode, codeSize);
+
+    m_shaderHashes.emplace(hash.hash, shaderData);
+  }
+}
+
 VkResult WrappedVulkan::vkCreateShaderModule(VkDevice device,
                                              const VkShaderModuleCreateInfo *pCreateInfo,
                                              const VkAllocationCallbacks *pAllocator,
                                              VkShaderModule *pShaderModule)
 {
   VkResult ret;
+
+  AddShaderModule((void*)pCreateInfo->pCode, pCreateInfo->codeSize);
+
   SERIALISE_TIME_CALL(ret = ObjDisp(device)->CreateShaderModule(Unwrap(device), pCreateInfo,
                                                                 pAllocator, pShaderModule));
 

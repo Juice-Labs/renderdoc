@@ -264,33 +264,53 @@ bool WrappedVulkan::Serialise_vkCmdDrawIndexed(SerialiserType &ser, VkCommandBuf
   if(IsReplayingAndReading())
   {
     m_LastCmdBufferID = GetResourceManager()->GetOriginalID(GetResID(commandBuffer));
-    //if(*(uint64_t *)&m_LastCmdBufferID == 19781)
-    //  return true;
+
+    bool shouldExecute = true;
+
+    if(*(uint64_t *)&m_LastCmdBufferID == 19781)
+    {
+      auto count = m_cmdOps.fetch_add(1);
+      if(count >= s_maxCmds)
+      {
+        shouldExecute = false;
+        return true;
+      }
+    }
 
     if(IsActiveReplaying(m_State))
     {
       if(InRerecordRange(m_LastCmdBufferID))
       {
+        if(!shouldExecute)
+          return true;
+          
         commandBuffer = RerecordCmdBuf(m_LastCmdBufferID);
 
         uint32_t eventId = HandlePreCallback(commandBuffer);
 
+
         ObjDisp(commandBuffer)
             ->CmdDrawIndexed(Unwrap(commandBuffer), indexCount, instanceCount, firstIndex,
-                             vertexOffset, firstInstance);
+                            vertexOffset, firstInstance);
 
         if(eventId && m_ActionCallback->PostDraw(eventId, commandBuffer))
         {
-          ObjDisp(commandBuffer)
-              ->CmdDrawIndexed(Unwrap(commandBuffer), indexCount, instanceCount, firstIndex,
-                               vertexOffset, firstInstance);
+            ObjDisp(commandBuffer)
+                ->CmdDrawIndexed(Unwrap(commandBuffer), indexCount, instanceCount, firstIndex,
+                                    vertexOffset, firstInstance);
           m_ActionCallback->PostRedraw(eventId, commandBuffer);
         }
       }
     }
     else
     {
-      ObjDisp(commandBuffer)->CmdDrawIndexed(Unwrap(commandBuffer), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+      if(shouldExecute)
+      {
+        ObjDisp(commandBuffer)
+            ->CmdDrawIndexed(Unwrap(commandBuffer), indexCount, instanceCount, firstIndex,
+                             vertexOffset, firstInstance);
+      }
+
       {
         AddEvent();
 
@@ -2081,28 +2101,41 @@ bool WrappedVulkan::Serialise_vkCmdUpdateBuffer(SerialiserType &ser, VkCommandBu
 
   SERIALISE_CHECK_READ_ERRORS();
 
+  bool shouldExecute = true;
+
   if(IsReplayingAndReading())
   {
     m_LastCmdBufferID = GetResourceManager()->GetOriginalID(GetResID(commandBuffer));
     if(*(uint64_t *)&m_LastCmdBufferID == 19781)
-      return true;
+    {
+      auto count = m_cmdOps.fetch_add(1);
+      if(count >= s_maxCmds)
+      {
+        shouldExecute = false;
+        return true;
+      }
+    }
 
     if(IsActiveReplaying(m_State))
     {
       if(InRerecordRange(m_LastCmdBufferID))
       {
+        if(!shouldExecute)
+          return true;
+
         commandBuffer = RerecordCmdBuf(m_LastCmdBufferID);
 
         uint32_t eventId = HandlePreCallback(commandBuffer, ActionFlags::Copy);
 
         ObjDisp(commandBuffer)
-            ->CmdUpdateBuffer(Unwrap(commandBuffer), Unwrap(destBuffer), destOffset, dataSize, Data);
+            ->CmdUpdateBuffer(Unwrap(commandBuffer), Unwrap(destBuffer), destOffset, dataSize,
+                            Data);
 
         if(eventId && m_ActionCallback->PostMisc(eventId, ActionFlags::Copy, commandBuffer))
         {
-          ObjDisp(commandBuffer)
-              ->CmdUpdateBuffer(Unwrap(commandBuffer), Unwrap(destBuffer), destOffset, dataSize,
-                                Data);
+            ObjDisp(commandBuffer)
+                ->CmdUpdateBuffer(Unwrap(commandBuffer), Unwrap(destBuffer), destOffset, dataSize,
+                                    Data);
 
           m_ActionCallback->PostRemisc(eventId, ActionFlags::Copy, commandBuffer);
         }
@@ -2110,8 +2143,11 @@ bool WrappedVulkan::Serialise_vkCmdUpdateBuffer(SerialiserType &ser, VkCommandBu
     }
     else
     {
-      ObjDisp(commandBuffer)
-          ->CmdUpdateBuffer(Unwrap(commandBuffer), Unwrap(destBuffer), destOffset, dataSize, Data);
+      if(shouldExecute)
+      {
+        ObjDisp(commandBuffer)
+            ->CmdUpdateBuffer(Unwrap(commandBuffer), Unwrap(destBuffer), destOffset, dataSize, Data);
+      }
 
       {
         AddEvent();

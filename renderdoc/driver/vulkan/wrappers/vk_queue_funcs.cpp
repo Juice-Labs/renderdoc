@@ -1214,7 +1214,10 @@ bool WrappedVulkan::Serialise_vkQueueSubmit(SerialiserType &ser, VkQueue queue, 
   {
     {
       auto result = ObjDisp(queue)->QueueWaitIdle(Unwrap(queue));
-      RDCASSERT(result == VK_SUCCESS);
+      if(result != VK_SUCCESS)
+      {
+        RDCDEBUG("QueueWaitIdle failed.");
+      }
     }
 
     // if there are multiple queue submissions in flight, wait for the previous queue to finish
@@ -1226,7 +1229,10 @@ bool WrappedVulkan::Serialise_vkQueueSubmit(SerialiserType &ser, VkQueue queue, 
       if(m_PrevQueue != VK_NULL_HANDLE)
       {
         auto result = ObjDisp(m_PrevQueue)->QueueWaitIdle(Unwrap(m_PrevQueue));
-        RDCASSERT(result == VK_SUCCESS);
+        if(result != VK_SUCCESS)
+        {
+          RDCDEBUG("QueueWaitIdle failed.");
+        }
       }
         
 
@@ -1242,7 +1248,10 @@ bool WrappedVulkan::Serialise_vkQueueSubmit(SerialiserType &ser, VkQueue queue, 
     if(doWait)
     {
       auto result = ObjDisp(queue)->QueueWaitIdle(Unwrap(queue));
-      RDCASSERT(result == VK_SUCCESS);
+      if(result != VK_SUCCESS)
+      {
+        RDCDEBUG("QueueWaitIdle failed.");
+      }
     }
       
 
@@ -1306,7 +1315,10 @@ bool WrappedVulkan::Serialise_vkQueueSubmit(SerialiserType &ser, VkQueue queue, 
 
     {
       auto result = ObjDisp(queue)->QueueWaitIdle(Unwrap(queue));
-      RDCASSERT(result == VK_SUCCESS);
+      if(result != VK_SUCCESS)
+      {
+        RDCDEBUG("QueueWaitIdle failed.");
+      }
     }
   }
 

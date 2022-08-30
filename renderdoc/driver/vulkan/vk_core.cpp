@@ -3264,7 +3264,7 @@ bool WrappedVulkan::ProcessChunk(ReadSerialiser &ser, VulkanChunk chunk)
   }
 
   char text[MAX_PATH];
-  std::snprintf(text, MAX_PATH, "ProcessChunk %s", str.c_str());
+  std::snprintf(text, MAX_PATH, "ProcessChunk %s\n", str.c_str());
   OutputDebugStringA(text);
 
   switch(chunk)
