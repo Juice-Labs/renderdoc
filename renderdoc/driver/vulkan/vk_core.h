@@ -31,6 +31,8 @@
 #include "vk_manager.h"
 #include "vk_state.h"
 
+#include <atomic>
+
 class VulkanShaderCache;
 class VulkanDebugManager;
 class VulkanResourceManager;
@@ -651,6 +653,8 @@ private:
   // on replay, the current command buffer for the last chunk we
   // handled.
   ResourceId m_LastCmdBufferID;
+  std::atomic<uint64_t> m_cmdOps = 0;
+  static const uint64_t s_maxCmds = UINT64_MAX;// 9;
 
   // this is a list of uint64_t file offset -> uint32_t EIDs of where each
   // action is used. E.g. the action at offset 873954 is EID 50. If a
@@ -829,6 +833,11 @@ private:
     SCOPED_LOCK(m_ForcedReferencesLock);
     m_ForcedReferences.push_back(record);
   }
+
+public:
+  void AddShaderModule(void *pCode, size_t codeSize);
+  std::map<uint64_t, std::vector<uint8_t>> m_shaderHashes;
+private:
 
   // used on replay side to track the queue family of command buffers and pools
   std::map<ResourceId, uint32_t> m_commandQueueFamilies;
@@ -2148,6 +2157,10 @@ public:
                                 VkSamplerYcbcrConversion ycbcrConversion,
                                 const VkAllocationCallbacks *pAllocator);
 
+  IMPLEMENT_FUNCTION_SERIALISED(void, vkDestroyIndirectCommandsLayoutNV, VkDevice device,
+                                VkIndirectCommandsLayoutNV indirectCommandsLayout,
+                                const VkAllocationCallbacks *pAllocator);
+
   // VK_KHR_device_group_creation
   VkResult vkEnumeratePhysicalDeviceGroups(
       VkInstance instance, uint32_t *pPhysicalDeviceGroupCount,
@@ -2565,4 +2578,10 @@ public:
   VkResult vkGetPhysicalDeviceFragmentShadingRatesKHR(
       VkPhysicalDevice physicalDevice, uint32_t *pFragmentShadingRateCount,
       VkPhysicalDeviceFragmentShadingRateKHR *pFragmentShadingRates);
+
+
+  IMPLEMENT_FUNCTION_SERIALISED(void, vkCmdBindPipelineShaderGroupNV, VkCommandBuffer commandBuffer,
+                                VkPipelineBindPoint pipelineBindPoint,
+                                VkPipeline pipeline,
+                                uint32_t groupIndex);
 };

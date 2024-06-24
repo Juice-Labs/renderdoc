@@ -201,10 +201,12 @@ bool WrappedVulkan::CheckMemoryRequirements(const char *resourceName, ResourceId
   // to increased size requirements.
   ResourceId memOrigId = GetResourceManager()->GetOriginalID(memId);
 
-  VulkanCreationInfo::Memory &memInfo = m_CreationInfo.m_Memory[memId];
-  uint32_t bit = 1U << memInfo.memoryTypeIndex;
-
   bool origInvalid = false;
+
+  VulkanCreationInfo::Memory &memInfo = m_CreationInfo.m_Memory[memId];
+
+  #if 0
+  uint32_t bit = 1U << memInfo.memoryTypeIndex;
 
   // verify type
   if((mrq.memoryTypeBits & bit) == 0)
@@ -238,6 +240,7 @@ bool WrappedVulkan::CheckMemoryRequirements(const char *resourceName, ResourceId
         bitsString.c_str(), GetPhysDeviceCompatString(external, origInvalid).c_str());
     return false;
   }
+  #endif
 
   // verify offset alignment
   if((memoryOffset % mrq.alignment) != 0)
@@ -318,6 +321,21 @@ bool WrappedVulkan::Serialise_vkAllocateMemory(SerialiserType &ser, VkDevice dev
               false, patched.memoryTypeIndex >= m_OrigPhysicalDeviceData.memProps.memoryTypeCount)
               .c_str());
       return false;
+    }
+
+    VkBaseInStructure *pNext = (VkBaseInStructure *)patched.pNext;
+    while(pNext)
+    {
+
+      if(pNext->sType == VK_STRUCTURE_TYPE_MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO)
+      {
+        auto bufInfo = (VkMemoryOpaqueCaptureAddressAllocateInfo *)pNext;
+        char text[MAX_PATH];
+        std::snprintf(text, MAX_PATH, "VkMemoryOpaqueCaptureAddressAllocateInfo: 0x%llx\n",
+                      (uint64_t)bufInfo->opaqueCaptureAddress);
+        OutputDebugStringA(text);
+      }
+      pNext = (VkBaseInStructure *)pNext->pNext;
     }
 
     VkResult ret = ObjDisp(device)->AllocateMemory(Unwrap(device), &patched, NULL, &mem);
@@ -1627,6 +1645,36 @@ bool WrappedVulkan::Serialise_vkCreateBuffer(SerialiserType &ser, VkDevice devic
     byte *tempMem = GetTempMemory(GetNextPatchSize(patched.pNext));
 
     UnwrapNextChain(m_State, "VkBufferCreateInfo", tempMem, (VkBaseInStructure *)&patched);
+
+    if((patched.usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) != 0)
+    {
+      printf("");
+    }
+
+    VkBaseInStructure *pNext = (VkBaseInStructure *)patched.pNext;
+    while(pNext)
+    {
+      if(pNext->sType == VK_STRUCTURE_TYPE_BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO)
+      {
+        auto bufInfo = (VkBufferOpaqueCaptureAddressCreateInfo *)pNext;
+        static bool used = true;
+
+        if(!used)
+        {
+          bufInfo->opaqueCaptureAddress = 0x14cf647000;
+          used = true;
+        }
+        
+        char text[MAX_PATH];
+        std::snprintf(text, MAX_PATH, "VkBufferOpaqueCaptureAddressCreateInfo: 0x%llx\n", (uint64_t)bufInfo->opaqueCaptureAddress);
+        OutputDebugStringA(text);
+      }
+      else if(pNext->sType == VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT)
+      {
+        printf("");
+      }
+      pNext = (VkBaseInStructure *)pNext->pNext;
+    }
 
     VkResult ret = ObjDisp(device)->CreateBuffer(Unwrap(device), &patched, NULL, &buf);
 
